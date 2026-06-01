@@ -16,9 +16,10 @@ interface AnalysisResult {
   confidence: number
   timestamp: Date
   imageUrl: string
+  colorometry: string
+  position: string
 }
 
-// Interface for backend response
 interface BackendEggResponse {
   id: string
   viability: boolean
@@ -68,6 +69,8 @@ export default function AnalysisPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
+  
   const analyzeImages = async () => {
     if (files.length === 0) return
     setIsAnalyzing(true)
@@ -79,7 +82,7 @@ export default function AnalysisPage() {
       formData.append("file", file)
 
       try {
-        const response = await fetch("http://localhost:8000/api/eggs/process/", {
+        const response = await fetch(`${API_URL}/api/eggs/process/`, {
           method: "POST",
           body: formData,
         })
@@ -107,6 +110,8 @@ export default function AnalysisPage() {
             confidence: egg.confidence * 100,
             timestamp: new Date(egg.analyzed_at),
             imageUrl: egg.image_url,
+            colorometry: egg.colorometry,
+            position: egg.position,
           }
 
           setResults((prev) => [...prev, analysisResult])
@@ -127,12 +132,13 @@ export default function AnalysisPage() {
 
   const exportResults = () => {
     const csvContent = [
-      ["ID", "Archivo", "Resultado", "Confianza (%)", "Fecha/Hora"],
+      ["ID", "Archivo", "Resultado", "Confianza (%)", "Color", "Fecha/Hora"],
       ...results.map((r) => [
         r.id,
         r.filename,
         r.result === "viable" ? "Viable" : "No Viable",
         r.confidence.toFixed(1),
+        r.colorometry,
         r.timestamp.toLocaleString(),
       ]),
     ]
@@ -286,9 +292,18 @@ export default function AnalysisPage() {
                   </div>
                   <div className="flex-1">
                     <h4 className="font-medium">{result.filename}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Analizado el {result.timestamp.toLocaleString()}
-                    </p>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <span>Analizado el {result.timestamp.toLocaleString()}</span>
+                      {/* ← Indicador visual de color */}
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-6 h-6 rounded-md border border-muted-foreground/30 shadow-sm"
+                          style={{ backgroundColor: result.colorometry }}
+                          title={`Color: ${result.colorometry}`}
+                        />
+                        <span className="text-xs font-mono">{result.colorometry}</span>
+                      </div>
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge
