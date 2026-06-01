@@ -1,4 +1,4 @@
-import { BarChart3, Camera, Home, ImageIcon, Settings } from "lucide-react"
+import { BarChart3, Camera, Home, ImageIcon, Settings, Building2 } from "lucide-react"  // 👈 Añadido Building2
 import Link from "next/link"
 
 import {
@@ -24,6 +24,12 @@ const menuItems = [
     title: "Análisis de Imagen",
     url: "/analysis",
     icon: ImageIcon,
+  },
+  // 👇 NUEVO: Módulo de administración de incubadoras
+  {
+    title: "Incubadoras",
+    url: "/incubators",
+    icon: Building2,
   },
   {
     title: "Calibración de Cámara",
